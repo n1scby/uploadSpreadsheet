@@ -23,9 +23,12 @@ namespace UploadSpreadsheet.Controllers
         }
 
 
-        public IActionResult Index()
+        public IActionResult Index(List<DogData> dogs)
         {
-            List<DogData> dogs = new List<DogData>();
+            if (dogs == null)
+            {
+                dogs = new List<DogData>();
+            }
             return View(dogs);
         }
 
@@ -54,7 +57,7 @@ namespace UploadSpreadsheet.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            List<DogData> dogs = new List<DogData>();
+            List<DogData> dogList = new List<DogData>();
             
             using(var memoryStream = new MemoryStream())
             {
@@ -64,20 +67,20 @@ namespace UploadSpreadsheet.Controllers
                     var worksheet = package.Workbook.Worksheets[0];
                     if (worksheet.Dimension.Rows > 0 && worksheet.Dimension.Columns > 0)
                     {
-                        for (int row = 1; row <= worksheet.Dimension.Rows; row++)
+                        for (int row = 2; row <= worksheet.Dimension.Rows; row++)   // start at row 2 to skip header
                         {
                             DogData dog = new DogData();
                             dog.Name = worksheet.Cells[row, 1].Value.ToString();
                             dog.Breed = worksheet.Cells[row, 2].Value.ToString();
                             dog.Age = int.Parse(worksheet.Cells[row, 3].Value.ToString());
                             dog.Gender = worksheet.Cells[row, 4].Value.ToString();
-                            dogs.Add(dog);
+                            dogList.Add(dog);
 
                         }
                     }
                 }
             }
-            return RedirectToAction(nameof(Index), dogs);
+            return View("Index", dogList);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
